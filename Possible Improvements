@@ -1,0 +1,12 @@
+For now I think the project is in an overal good condition. However, there are several minor and minute issues that can be addressed in the future:
+- End FFMPEG Processes on app close as well
+- Styling:
+  - audio/video/image icons instead of folders
+  - Close the distance between the icons and the actions
+  - Standardize Buttons styling
+= Fix the 2 loaded windows bug
+- Fix the Dev Pane not always opening bug
+- Don't load empty folders/files, instaed pop a 'no files found' notifcation
+- Expand/ Collapse All functionality, perhaps auto expand all on files selection
+- Info or tutorial modal on app start
+- A before and after size modal after conversion
