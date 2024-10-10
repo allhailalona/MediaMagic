@@ -5,12 +5,18 @@ import path, { parse, join } from 'path'
 import bytes from 'bytes'
 import { getFolderSize } from 'go-get-folder-size'
 import { DirItem } from '../types'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
+const execAsync = promisify(exec)
 
 export default function ipc(): void {
   ipcMain.handle('SELECT_DIRS', handleSelectDirs)
   ipcMain.handle('GET_DETAILS', handleGetDetails)
   ipcMain.handle('SELECT_OUTPUT_DIR', handleSelectOutputDir)
   ipcMain.handle('CONVERT_EXPLORER', handleConvertExplorer)
+  ipcMain.handle('IS_FFMPEG_ACTIVE', handleIsFFMPEGActive)
+  ipcMain.handle('STOP_ALL_FFMPEG_PROCESSES', handleStopAllFFMPEGProcesses)
 }
 
 // Accept event and object if the func was called via dnd in front, or pathsToDetail if it was called via handleSelectDir
@@ -141,5 +147,41 @@ async function handleSelectOutputDir(e: IpcMainInvokeEvent): Promise<string> {
   } else {
     console.log('selected res is', res)
     return res.filePaths[0]
+  }
+}
+
+async function handleIsFFMPEGActive(): Promise<boolean> {
+  const command =
+    process.platform === 'win32'
+      ? 'tasklist | findstr "ffmpeg"'
+      : 'ps aux | grep ffmpeg | grep -v grep'
+
+  try {
+    const { stdout } = await execAsync(command)
+    return typeof stdout === 'string' && stdout.trim().length > 0
+  } catch (error) {
+    if (error.code !== 1) {
+      console.error('Error checking FFMPEG:', error)
+    }
+    return false
+  }
+}
+
+async function handleStopAllFFMPEGProcesses(): Promise<void> {
+  const command = process.platform === 'win32' ? 'taskkill /F /IM ffmpeg.exe' : 'pkill -9 ffmpeg'
+
+  try {
+    const { stdout, stderr } = await execAsync(command)
+
+    if (stderr) {
+      console.error(`Stderr: ${stderr}`)
+      throw new Error(stderr)
+    }
+
+    console.log(`FFmpeg processes terminated: ${stdout}`)
+    return stdout
+  } catch (error) {
+    console.error(`Error stopping FFmpeg processes: ${error.message}`)
+    throw error
   }
 }

@@ -7,6 +7,7 @@ const ExplorerContext = createContext<ExplorerContextType | undefined>(undefined
 
 export const ExplorerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [explorer, setExplorer] = useState<DirItem[]>([])
+  const [convertClicked, setConvertClicked] = useState<boolean>(false)
 
   // Config 'no children' notification
   const showEmptyFolderNotification = (): void => {
@@ -106,7 +107,9 @@ export const ExplorerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   return (
-    <ExplorerContext.Provider value={{ explorer, setExplorer, expandFolder, deleteItem }}>
+    <ExplorerContext.Provider
+      value={{ explorer, setExplorer, convertClicked, setConvertClicked, expandFolder, deleteItem }}
+    >
       {children}
     </ExplorerContext.Provider>
   )

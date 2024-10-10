@@ -13,7 +13,6 @@ export default function FileView(): JSX.Element {
   const { explorer, setExplorer, expandFolder, deleteItem } = useExplorer()
 
   const updateItemProgress = (items: DirItem[], path: string, progress: number): DirItem[] => {
-    console.log('current item', path, 'percentage is', progress)
     return items.map((item: DirItem) => {
       // If the item is null, return it as is
       if (item === null) return null

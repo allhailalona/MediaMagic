@@ -38,3 +38,4 @@ todo:
   properly clean terminal
   load only one window
   kill ffmpeg on app close 
+  devpane doesn't always open

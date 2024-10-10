@@ -1,9 +1,8 @@
-// ProgressIndicator.js
-
-import React from 'react'
 import { Progress, Spin } from 'antd'
 import { CheckOutlined, LoadingOutlined } from '@ant-design/icons'
 import styled from 'styled-components'
+import { useExplorer } from '../ExplorerContext'
+import { ext } from '../../../types'
 
 const FullWidthProgress = styled(Progress)`
   .ant-progress-outer {
@@ -27,17 +26,19 @@ const CenteredContainer = styled.div`
   height: 100%;
 `
 
-const ProgressIndicator = ({ fileType, progress }) => {
-  const isComplete = progress >= 100
+const ProgressIndicator = ({ fileType, progress }: { fileType: ext; progress: number }) => {
+  const { convertClicked } = useExplorer()
   const iconSize = 36 // Consistent size for both spinner and checkmark
 
   if (fileType === 'image') {
     return (
       <CenteredContainer>
-        {isComplete ? (
+        {progress >= 100 ? (
           <CheckOutlined style={{ fontSize: iconSize, color: '#52c41a' }} />
         ) : (
-          <WhiteSpin indicator={<LoadingOutlined style={{ fontSize: iconSize }} spin />} />
+          convertClicked && ( // Removed extra curly braces
+            <WhiteSpin indicator={<LoadingOutlined style={{ fontSize: iconSize }} spin />} />
+          )
         )}
       </CenteredContainer>
     )
@@ -46,7 +47,7 @@ const ProgressIndicator = ({ fileType, progress }) => {
     return (
       <FullWidthProgress
         percent={progress}
-        status={isComplete ? 'success' : 'active'}
+        status={progress >= 100 ? 'success' : 'active'}
         showInfo={false}
       />
     )
