@@ -1,2 +1,4 @@
-filter unsupported files in getDetails func in utils.ts n imp live progress feedback in front
-- update supported files list
+- Hide remove files while converting
+- Adjust styling slightly
+- Kill all FFMPEG processes after close
+- Fix blank window bug

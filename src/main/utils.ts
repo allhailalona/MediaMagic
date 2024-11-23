@@ -7,14 +7,17 @@ import { getVideoDurationInSeconds } from 'get-video-duration'
 import { DirItem, ext } from '../types'
 
 export function isValidExt(filePath: string): ext {
-  const validExt: Record<string, string[]> = {
+  // Define validExt with explicit key typing
+  const validExt = {
     video: ['mp4', 'mkv', 'mov', 'avi', 'webm'],
     audio: ['mp3', 'wav', 'flac', 'ogg', 'opus'],
     image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tif', 'tiff']
-  }
+  } as const // Make it readonly
+
   const ext = path.extname(filePath).toLowerCase().slice(1)
 
-  for (const [group, extensions] of Object.entries(validExt)) {
+  // Use type assertion for Object.entries to ensure correct types
+  for (const [group, extensions] of Object.entries(validExt) as [ext, readonly string[]][]) {
     if (extensions.includes(ext)) {
       return group
     }

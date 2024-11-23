@@ -10,14 +10,11 @@ import {
 
 export default function ActionPane(): JSX.Element {
   const [outputDir, setOutputDir] = useState<string>('C:\\Users\\user\\Desktop')
-  const [isStopClicked, setIsStopClicked] = useState<boolean>(false)
 
   const { explorer, setExplorer, convertClicked, setConvertClicked } = useExplorer()
 
   const handleSelectOutputDir = async (): Promise<void> => {
-    console.log('hello from output dir')
     const res = await window.electron.ipcRenderer.invoke('SELECT_OUTPUT_DIR')
-    console.log('res is front', res)
     setOutputDir(res)
   }
 
@@ -28,7 +25,7 @@ export default function ActionPane(): JSX.Element {
       const clonedExplorer = cloneDeep(explorer) // Properly cloning the explorer
       const props = { explorer: clonedExplorer, outputDir } // Create props object with cloned explorer
       console.log('sending', props)
-      const res = await window.electron.ipcRenderer.invoke('CONVERT_EXPLORER', props)
+      await window.electron.ipcRenderer.invoke('CONVERT_EXPLORER', props)
     } else {
       showSelectedFilesNotification()
     }
@@ -77,14 +74,14 @@ export default function ActionPane(): JSX.Element {
               '0%': '#108ee9',
               '100%': '#87d068'
             }}
-            style={{ width: '80%' }} // Control the width this way
+            style={{ width: '92%' }} // Control the width this way
           />
           <Button
             type="primary"
             danger
             size="large"
             onClick={stopAllFFmpegProcesses}
-            className="bg-red-500, border-white flex justify-center items-center h-[40px] font-bold"
+            className="bg-red-500, border-white flex justify-center items-center h-[40px] w-[5%] font-bold"
           >
             Stop
           </Button>

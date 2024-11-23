@@ -21,64 +21,46 @@ export const ExplorerProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }
 
   // Function to recursively collapse all subfolders and handle null values
-  const collapseAll = (items: (DirItem | null)[] | undefined): (DirItem | null)[] | undefined => {
-    // Map through each item in the array
+  const collapseAll = (items: DirItem[]): DirItem[] => {
     return items.map((item) => {
-      // Return a new object with collapsed state
+      if (!item) return item
+
       return {
-        ...item, // Spread all properties of the original item
-        isExpanded: false, // Set expanded state to false
+        ...item,
+        isExpanded: false,
         children: item.children ? collapseAll(item.children) : undefined
-        // Recursively collapse children if they exist, otherwise set to undefined
       }
     })
   }
 
   // Function to expand or collapse a folder at a specific index and depth
   const expandFolder = (index: number, depth: number): void => {
-    // Update the explorer state
     setExplorer((prevExplorer: DirItem[]) => {
-      // Helper function to recursively update the explorer structure
-      const updateExplorer = (
-        items: (DirItem | null)[],
-        currentDepth: number
-      ): (DirItem | null)[] => {
+      const updateExplorer = (items: DirItem[], currentDepth: number): DirItem[] => {
         return items.map((item, i) => {
-          // Check if this is the item we want to expand/collapse
+          if (!item) return item
+
           if (i === index && currentDepth === depth) {
-            // If item has no children or empty children array, show notification and don't toggle
             if (!item.children || item.children.length === 0) {
               showEmptyFolderNotification()
               return item
             }
 
-            // Toggle the expanded state
             const newIsExpanded = !item.isExpanded
-
-            // Return the updated item
             return {
               ...item,
               isExpanded: newIsExpanded,
-              children: newIsExpanded
-                ? item.children // If expanding, keep children as is
-                : collapseAll(item.children) // If collapsing, collapse all subfolders
+              children: newIsExpanded ? item.children : collapseAll(item.children)
             }
           }
 
-          // If item has children, recursively update them
-          if (item.children) {
-            return {
-              ...item,
-              children: updateExplorer(item.children, currentDepth + 1)
-            }
+          return {
+            ...item,
+            children: item.children ? updateExplorer(item.children, currentDepth + 1) : undefined
           }
-
-          // If not the target item and no children, return the item as is
-          return item
         })
       }
 
-      // Start the update process from the top level
       return updateExplorer(prevExplorer, 0)
     })
   }

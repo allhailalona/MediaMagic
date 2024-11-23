@@ -10,12 +10,10 @@ import ProgressIndicator from './ProgressIndicator'
 export default function FileView(): JSX.Element {
   const [dragOverScreen, setDragOverScreen] = useState<boolean>(false)
 
-  const { explorer, setExplorer, expandFolder, deleteItem } = useExplorer()
+  const { explorer, setExplorer, expandFolder, deleteItem, convertClicked } = useExplorer()
 
   const updateItemProgress = (items: DirItem[], path: string, progress: number): DirItem[] => {
-    return items.map((item: DirItem) => {
-      // If the item is null, return it as is
-      if (item === null) return null
+    return items.map((item) => {
       if (item.path === path) {
         return { ...item, progress }
       } else if (item.children) {
@@ -23,24 +21,23 @@ export default function FileView(): JSX.Element {
           ...item,
           children: updateItemProgress(item.children, path, progress)
         }
-      } else {
-        return item
       }
+      return item
     })
   }
 
   useEffect(() => {
     const handleProgressUpdate = (
-      event: IpcRendererEvent,
+      _event: IpcRendererEvent,
       inputPath: string,
       latestProgress: number
-    ) => {
+    ): Promise<void> => {
       setExplorer((prevExplorer) => updateItemProgress(prevExplorer, inputPath, latestProgress))
     }
 
     window.electron.ipcRenderer.on('LIVE_PROGRESS', handleProgressUpdate)
 
-    return () => {
+    return (): void => {
       window.electron.ipcRenderer.removeListener('LIVE_PROGRESS', handleProgressUpdate)
     }
   }, [])
@@ -90,12 +87,14 @@ export default function FileView(): JSX.Element {
               ) : (
                 <div className="w-8"></div> // Placeholder for alignment
               )}
-              <Button
-                onClick={() => deleteItem(index, depth)}
-                className="bg-red-600 hover:bg-red-700 text-white p-2 rounded ml-2"
-              >
-                <FaTrash size={14} />
-              </Button>
+              {!convertClicked && (
+                <Button
+                  onClick={() => deleteItem(index, depth)}
+                  className="bg-red-600 hover:bg-red-700 text-white p-2 rounded ml-2"
+                >
+                  <FaTrash size={14} />
+                </Button>
+              )}
             </div>
           </td>
           <td className="p-3 text-lg">
@@ -138,7 +137,13 @@ export default function FileView(): JSX.Element {
           {dragOverScreen ? (
             <h1 className="text-2xl font-bold text-blue-400">Drop files here</h1>
           ) : (
-            <div className="text-center">
+            <div className="flex justify-center items-center flex-col">
+              <div className="w-[60%] mb-6 text-center">
+                <h1 className="text-xl font-bold text-gray-400">
+                  Greetings, videos will be converted to AV1, images will be converted to AVIF,
+                  audios will be converted to OPUS
+                </h1>
+              </div>
               <div className="flex justify-center space-x-4 mb-6">
                 <Button
                   onClick={() => importDirs('folder')}

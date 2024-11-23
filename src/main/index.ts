@@ -1,13 +1,14 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import ipc from './ipc'
+import { handleStopAllFFMPEGProcesses } from './ipc'
 
 // Declare mainWindow as a global variable
 let mainWindow: BrowserWindow | null = null
 
 // This function serves the interval live progress reports of converting files
-export function sendToRenderer(channel: string, ...args: any[]): void {
+export function sendToRenderer(channel: string, ...args): void {
   console.log('sending to renderer', channel, ...args)
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
@@ -27,7 +28,11 @@ function createWindow(): void {
 
   mainWindow.maximize() // Default full screen
   mainWindow.removeMenu() // Default remove top menu
-  mainWindow.webContents.openDevTools() // Default open dev pane
+
+  // Stop all FFMPEG processes on close listener 1
+  mainWindow.on('close', async () => {
+    await handleStopAllFFMPEGProcesses()
+  })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
@@ -57,6 +62,11 @@ app.whenReady().then(() => {
   // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
+  })
+
+  // Stop all FFMPEG processes before app closes listener 2
+  app.on('before-quit', async () => {
+    await handleStopAllFFMPEGProcesses()
   })
 
   createWindow()

@@ -1,4 +1,5 @@
 import { ipcMain, IpcMainInvokeEvent, dialog } from 'electron'
+import { ExecException } from 'child_process'
 import { lstat, readdir } from 'fs/promises'
 import { isValidExt, getDuration, convertExplorer } from './utils'
 import path, { parse, join } from 'path'
@@ -21,10 +22,10 @@ export default function ipc(): void {
 
 // Accept event and object if the func was called via dnd in front, or pathsToDetail if it was called via handleSelectDir
 const handleGetDetails = async (
-  e: IpcMainInvokeEvent | null,
+  _e: IpcMainInvokeEvent | null,
   pathsToDetail: string[]
 ): Promise<DirItem[]> => {
-  const res = await Promise.allSettled(
+  const res = await Promise.allSettled<DirItem | undefined>(
     // 1. Check paths type - file/folder
     pathsToDetail.map(async (path: string) => {
       try {
@@ -38,62 +39,48 @@ const handleGetDetails = async (
             })
           )
 
+          // Ensure children property is properly typed in return value
           const detailedFolder: DirItem = {
             path,
-            isExpanded: false, // This one is for future rendering
+            isExpanded: false,
             name: parse(path).base,
             type: 'folder',
             size: bytes(await getFolderSize(path)),
-            children: children.flat()
+            children: children.flat() as DirItem[] // Explicitly type the flattened array
           }
 
           return detailedFolder
-        } else if (stats.isFile() && ['video', 'audio', 'image'].includes(isValidExt(path))) {
-          // 2. Check if the file exension is media
+        } else if (stats.isFile() && isValidExt(path)) {
           const pathExt = isValidExt(path)
-          if (['video', 'audio', 'image'].includes(pathExt!)) {
-            // 3. Construct a detailed file obj
-            const name = parse(path)
-            console.log('name is', name)
-
+          if (pathExt !== null) {
+            // Add null check
             const detailedFile: DirItem = {
               path,
               name: parse(path).base,
               type: 'file',
-              ext: pathExt,
+              ext: pathExt, // Now pathExt is guaranteed to be 'video' | 'audio' | 'image'
               size: bytes(stats.size),
-              duration: ['video', 'audio'].includes(pathExt!) ? await getDuration(path) : 'none'
+              duration: ['video', 'audio'].includes(pathExt) ? await getDuration(path) : 'none'
             }
             return detailedFile
           }
         }
-      } catch (err) {
-        throw new Error(`Error processing path ${path}: ${err.message}`)
+
+        return undefined
+      } catch (err: unknown) {
+        // Type guard to check if err is an Error object
+        if (err instanceof Error) {
+          throw new Error(`Error processing path ${path}: ${err.message}`)
+        }
+        // Handle non-Error objects
+        throw new Error(`Error processing path ${path}: Unknown error`)
       }
     })
   )
 
-  const filteredRes = (items) => {
-    return items.reduce((acc, item) => {
-      if (item.status === 'fulfilled') {
-        if (item.value) {
-          acc.push(item.value)
-        }
-        // If no value, item is not added to acc (effectively deleted)
-      } else {
-        if (item.children && item.children.length > 0) {
-          item.children = filteredRes(item.children)
-        }
-        acc.push(item)
-      }
-      return acc
-    }, [])
-  }
-
-  // A logging tecnique, doesn't manipulate the object
   const getCircularReplacer = () => {
     const seen = new WeakSet()
-    return (key, value) => {
+    return (_key: string, value: unknown): unknown => {
       if (typeof value === 'object' && value !== null) {
         if (seen.has(value)) {
           return '[Circular]'
@@ -104,12 +91,22 @@ const handleGetDetails = async (
     }
   }
 
+  // Helper function to filter and type-check settled promises
+  const filteredRes = (items: PromiseSettledResult<DirItem | undefined>[]): DirItem[] => {
+    return items.reduce((acc: DirItem[], item) => {
+      if (item.status === 'fulfilled' && item.value !== undefined) {
+        acc.push(item.value)
+      }
+      return acc
+    }, [])
+  }
+
   console.log('explorer is', JSON.stringify(filteredRes(res), getCircularReplacer(), 2))
   return filteredRes(res)
 }
 
 async function handleConvertExplorer(
-  e: IpcMainInvokeEvent,
+  _e: IpcMainInvokeEvent,
   { explorer, outputDir }: { explorer: DirItem[]; outputDir: string }
 ): Promise<void> {
   const newOutputDir = path.join(outputDir, 'converted') // Create 'Converted' folder in output dir
@@ -117,7 +114,7 @@ async function handleConvertExplorer(
 }
 
 async function handleSelectDirs(
-  e: IpcMainInvokeEvent,
+  _e: IpcMainInvokeEvent,
   { type }: { type: string }
 ): Promise<DirItem[]> {
   console.log('type is', type)
@@ -137,7 +134,7 @@ async function handleSelectDirs(
   }
 }
 
-async function handleSelectOutputDir(e: IpcMainInvokeEvent): Promise<string> {
+async function handleSelectOutputDir(_e: IpcMainInvokeEvent): Promise<string> {
   console.log('select output dir')
   const res = await dialog.showOpenDialog({
     properties: ['openDirectory']
@@ -150,6 +147,7 @@ async function handleSelectOutputDir(e: IpcMainInvokeEvent): Promise<string> {
   }
 }
 
+// Check if any FFMPEG processes are currently running
 async function handleIsFFMPEGActive(): Promise<boolean> {
   const command =
     process.platform === 'win32'
@@ -159,15 +157,19 @@ async function handleIsFFMPEGActive(): Promise<boolean> {
   try {
     const { stdout } = await execAsync(command)
     return typeof stdout === 'string' && stdout.trim().length > 0
-  } catch (error) {
-    if (error.code !== 1) {
+  } catch (error: unknown) {
+    // Type guard to check if error is an object with a code property
+    if (error && typeof error === 'object' && 'code' in error && error.code !== 1) {
       console.error('Error checking FFMPEG:', error)
     }
     return false
   }
 }
 
-async function handleStopAllFFMPEGProcesses(): Promise<void> {
+export async function handleStopAllFFMPEGProcesses(): Promise<string> {
+  console.log('killing all FFMPEG processes')
+
+  // Command based on platform
   const command = process.platform === 'win32' ? 'taskkill /F /IM ffmpeg.exe' : 'pkill -9 ffmpeg'
 
   try {
@@ -180,8 +182,10 @@ async function handleStopAllFFMPEGProcesses(): Promise<void> {
 
     console.log(`FFmpeg processes terminated: ${stdout}`)
     return stdout
-  } catch (error) {
-    console.error(`Error stopping FFmpeg processes: ${error.message}`)
-    throw error
+  } catch (error: unknown) {
+    // Type guard to handle ExecException specifically
+    const execError = error as ExecException
+    console.error(`Error stopping FFmpeg processes: ${execError.message}`)
+    throw execError
   }
 }

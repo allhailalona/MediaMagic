@@ -2,13 +2,13 @@ import React from 'react'
 
 export type DirItem = {
   path: string
-  isExpanded?: boolean
   name: string
   type: 'file' | 'folder'
-  ext?: ext
+  ext?: 'video' | 'audio' | 'image'
   size: string
   duration?: string
-  children?: (DirItem | null)[] | undefined
+  children?: DirItem[]
+  isExpanded?: boolean
   progress?: number
 }
 
