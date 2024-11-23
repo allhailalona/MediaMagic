@@ -1,4 +1,5 @@
 import path from 'path'
+import { app } from 'electron'
 import { sendToRenderer } from './index'
 import { setInterval } from 'timers'
 import ffmpeg from 'fluent-ffmpeg'
@@ -40,7 +41,7 @@ export async function getDuration(filePath: string): Promise<string> {
 
     return duration
   } catch (err) {
-    console.error('err in getDuration in utils.ts')
+    console.error('err in getDuration in utils.ts', err)
     throw err
   }
 }
@@ -55,7 +56,7 @@ export async function convertExplorer(explorer: DirItem[], outputDir: string): P
       if (dir.type === 'folder') {
         const childOutputDir = path.join(outputDir, dir.name)
         await fs.mkdir(childOutputDir, { recursive: true }) // Create folder with child's name in output dir 'Converted'
-        await convertExplorer(dir.children, childOutputDir)
+        await convertExplorer(dir.children!, childOutputDir)
       } else {
         const fileOutputDir = path.join(outputDir, dir.name)
         // 3 Function to handle all extensions - input path (what to convert), and output path (where to convert), for each function
@@ -236,3 +237,35 @@ async function convertImage(inputPath: string, outputPath: string): Promise<void
       .save(outputPath)
   })
 }
+
+export const getFFmpegPath = () => {
+  console.log('hello from getFFmpeg path')
+  const ffmpegPath = app.isPackaged
+    ? path.join(process.resourcesPath, 'bin', 'ffmpeg.exe')
+    : path.join(app.getAppPath(), 'resources', 'bin', 'ffmpeg.exe');
+    
+  console.log('FFmpeg Path:', {
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    appPath: app.getAppPath(),
+    finalPath: ffmpegPath
+  });
+  
+  return ffmpegPath;
+};
+
+export const getFFprobePath = () => {
+  console.log('hello from getFFprobePath')
+  const ffprobePath = app.isPackaged
+    ? path.join(process.resourcesPath, 'bin', 'ffprobe.exe')
+    : path.join(app.getAppPath(), 'resources', 'bin', 'ffprobe.exe');
+    
+  console.log('FFprobe Path:', {
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    appPath: app.getAppPath(),
+    finalPath: ffprobePath
+  });
+  
+  return ffprobePath;
+};

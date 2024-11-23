@@ -31,7 +31,7 @@ export default function FileView(): JSX.Element {
       _event: IpcRendererEvent,
       inputPath: string,
       latestProgress: number
-    ): Promise<void> => {
+    ): void => {
       setExplorer((prevExplorer) => updateItemProgress(prevExplorer, inputPath, latestProgress))
     }
 

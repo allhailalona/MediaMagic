@@ -29,6 +29,7 @@ const handleGetDetails = async (
     // 1. Check paths type - file/folder
     pathsToDetail.map(async (path: string) => {
       try {
+        console.log('about to detail files')
         const stats = await lstat(path)
         if (stats.isDirectory()) {
           const childNames = await readdir(path) // Get children names
