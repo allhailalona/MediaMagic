@@ -3,3 +3,5 @@ dist
 out
 .DS_Store
 *.log*
+resources/*
+!resources/FFmpeg binaries should be here but excluded in gitignore.txt

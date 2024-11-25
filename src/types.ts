@@ -21,4 +21,4 @@ export type ExplorerContextType = {
   deleteItem: (index: number, depth: number) => void
 }
 
-export type ext = 'video' | 'audio' | 'image' | null
+export type ext = 'video' | 'audio' | 'image' | null | undefined
