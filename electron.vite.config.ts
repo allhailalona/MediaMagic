@@ -8,7 +8,7 @@ export default defineConfig({
     build: {
       rollupOptions: {
         output: {
-          dir: 'out/main',  // Ensure the output goes where you expect
+          dir: 'out/main' // Ensure the output goes where you expect
         }
       }
     }
@@ -25,4 +25,3 @@ export default defineConfig({
     plugins: [react()]
   }
 })
-

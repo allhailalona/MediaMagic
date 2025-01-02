@@ -56,11 +56,11 @@
     "react-dom": "^18.3.1",
     "typescript": "^5.5.2",
     "vite": "^5.3.1"
-  }, 
+  },
   "build": {
     "appId": "com.your-app-id",
     "files": [
-      "out/**/*",  
+      "out/**/*",
       "resources/**/*"
     ],
     "directories": {
@@ -71,29 +71,38 @@
       {
         "from": "./resources/bin/",
         "to": "bin/",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "./resources/doc/",
         "to": "doc/",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "./resources/presets/",
         "to": "presets/",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "./resources/README.txt",
         "to": "README.txt",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       },
       {
         "from": "./resources/LICENSE",
         "to": "LICENSE",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ]
   }
 }
-
