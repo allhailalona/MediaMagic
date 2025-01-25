@@ -118,6 +118,7 @@ const convertVideo = async (inputPath: string, outputPath: string): Promise<void
   return new Promise((resolve, reject) => {
     const commonOptions = [
       '-c:v libaom-av1', // Video codec - AV1 encoder
+      '-f mp4', // Force .mp4 container to assure wide compatability
       '-crf 22', // Constant Rate Factor - controls quality (lower = better)
       '-b:v 0', // Sets variable bitrate (VBR) mode by specifying 0 for the video bitrate. This lets the CRF value control quality instead of targeting a specific bitrate.
       '-cpu-used 4', // Encoding speed (0-8, higher = faster but lower quality)
