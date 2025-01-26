@@ -65,7 +65,6 @@ export default function FileView(): JSX.Element {
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>): Promise<void> => {
     e.preventDefault()
     setDragOverScreen(false)
-    console.log('drop detected')
     const pathsToDetail = Array.from(e.dataTransfer.files).map((file) => file.path)
     const res = await window.electron.ipcRenderer.invoke('GET_DETAILS', pathsToDetail)
     console.log('detiled res is', res)
@@ -74,7 +73,6 @@ export default function FileView(): JSX.Element {
   }
 
   const importDirs = async (type: 'folder' | 'file'): Promise<void> => {
-    console.log(`Importing ${type}`)
     const res = await window.electron.ipcRenderer.invoke('SELECT_DIRS', { type })
     console.log('detiled res is', res)
 
@@ -85,8 +83,8 @@ export default function FileView(): JSX.Element {
     return items.map((dir, index) => (
       <Fragment key={`${depth}-${index}`}>
         <tr className="border-b border-gray-700 hover:bg-gray-800">
-          <td className="p-3 w-24 text-lg">
-            <div style={{ paddingLeft: `${depth * 20}px` }} className="flex items-center">
+          <td className="p-1 w-16 text-lg">
+            <div style={{ paddingLeft: `${depth * 10}px` }} className="flex items-center">
               {dir.type === 'folder' && dir.children ? (
                 <Button
                   onClick={() => expandFolder(dir.size, index, depth)}
@@ -107,13 +105,17 @@ export default function FileView(): JSX.Element {
               )}
             </div>
           </td>
-          <td className="p-3 text-lg">
-            <div style={{ paddingLeft: `${depth * 20}px` }} className="flex items-center">
+          <td className="text-lg">
+            <div style={{ paddingLeft: `${depth * 10}px` }} className="flex items-center">
               {dir.type === 'folder' ? (
-                <span className="mr-2 text-yellow-500">📁</span>
-              ) : (
-                <span className="mr-2 text-blue-500">📄</span>
-              )}
+                <span className="mr-2">📁</span>
+              ) : dir.ext === 'video' ? (
+                <span className="mr-2">🎬</span>
+              ) : dir.ext === 'image' ? (
+                <span className="mr-2">🖼️</span>
+              ) : dir.ext === 'audio' ? (
+                <span className="mr-2">🔊</span>
+              ) : null}
               {dir.name}
             </div>
           </td>

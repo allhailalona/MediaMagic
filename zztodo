@@ -1,10 +1,14 @@
-Optional n oddities:
+Optional:
+  - denser styling and nicer icons for files, start loading for videos at 2 perecnt and show number
   - restructuring the front comps as well for better readability is advisable. 
   - add lines animation to easily distinguish between dir levels - might be unnecessasrily complex
+  - the audio could benefit from conditional covnerting - think about it
+  - hide error if it came from stopping the process
+  - testing
+
+Oddities:
   - start app only once - I suspect the issue is in the index comp which runs twice - check logs - for now it seems alright
 
 a long run commit:
   - pacakge ffmpeg binaries in final build
 
-a really long run commit:
-ADD TESTING!

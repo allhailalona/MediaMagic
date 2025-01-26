@@ -66,17 +66,20 @@ npm start
 ## FFmpeg Integration Approaches
 
 ### Initial Manual Approach
+
 Attempted direct FFmpeg binary integration through electron-builder configuration:
 
 ```json
 {
   "build": {
     "files": ["out/**/*", "resources/**/*"],
-    "extraResources": [{
-      "from": "./resources/bin/",
-      "to": "bin/",
-      "filter": ["**/*"]
-    }]
+    "extraResources": [
+      {
+        "from": "./resources/bin/",
+        "to": "bin/",
+        "filter": ["**/*"]
+      }
+    ]
   }
 }
 ```
@@ -85,7 +88,7 @@ Path resolution was handled in the main process:
 
 ```typescript
 const getFFmpegPath = () => {
-  return app.isPackaged 
+  return app.isPackaged
     ? path.join(process.resourcesPath, 'bin', 'ffmpeg.exe')
     : path.join(app.getAppPath(), 'resources', 'bin', 'ffmpeg.exe')
 }
@@ -94,6 +97,7 @@ const getFFmpegPath = () => {
 Unfortunately that did not work, the built app couldn't perform any ffmpeg ops
 
 ### NPM Package Approach
+
 Attempted using `@ffmpeg-installer/ffmpeg` and `@ffprobe-installer/ffprobe`:
 
 ```typescript
