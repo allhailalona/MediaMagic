@@ -32,32 +32,33 @@ const ProgressIndicator = ({
 }: {
   fileType: ext
   progress: number
-}): JSX.Element => {
+}): React.ReactElement | null => {
   const { convertClicked } = useExplorer()
   const iconSize = 36 // Consistent size for both spinner and checkmark
 
   if (fileType === 'image') {
     return (
       <CenteredContainer>
-        {progress >= 100 ? (
+        {!convertClicked ? (
+          <div className="w-8 h-8 rounded-full border-2 border-white" />
+        ) : progress >= 100 ? (
           <CheckOutlined style={{ fontSize: iconSize, color: '#52c41a' }} />
         ) : (
-          convertClicked && ( // Removed extra curly braces
-            <WhiteSpin indicator={<LoadingOutlined style={{ fontSize: iconSize }} spin />} />
-          )
+          <WhiteSpin indicator={<LoadingOutlined style={{ fontSize: iconSize }} spin />} />
         )}
       </CenteredContainer>
     )
-  } else {
+  } else if (fileType === 'video' || fileType === 'audio') {
     // for audio and video
     return (
       <FullWidthProgress
-        percent={progress}
+        percent={convertClicked ? (progress >= 2 ? progress : 2) : 100}
         status={progress >= 100 ? 'success' : 'active'}
         showInfo={false}
       />
     )
   }
+  return null // In case nothing fits
 }
 
 export default ProgressIndicator

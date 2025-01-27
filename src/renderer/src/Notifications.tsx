@@ -35,7 +35,7 @@ export const showConversionStoppedNotification = (): void => {
 
 export const showConversionErrorNotification = (filename: string, errorMessage: string): void => {
   notification.error({
-    message: 'Conversion Error',
+    message: 'Conversion aa Error',
     description: `Error with file '${filename}': ${errorMessage}. Please hold while FFMPEG stops completely`,
     icon: <CloseCircleOutlined style={{ color: '#ff4d4f' }} />,
     placement: 'topRight',

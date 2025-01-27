@@ -1,8 +1,6 @@
-- Small adjustments to videos and images conversion settings:
-  - use lanczos for conversion from 4k to 1080
-  - use commonOptions for convertImage func for better readability
-  - make sure the container is avif for compatability
+fix: 🐛 various fixes check description 
 
-- Solve the double folder toggle by adding the size comparison as well (the size is mostly unique to each dir)
-- Don't clear the output on clear all!
-- Attempt to wrap ffmpeg binaries in the final build unsuccessfully
+- Adjusted audio conversion props to handle a wider variety of cases without losing too much quality/size
+- Slightly adjusted styling
+- Start videos loading bar at 2% and show a complete bar before start
+- Show a blank circle for images - don't show laoding bar for folders

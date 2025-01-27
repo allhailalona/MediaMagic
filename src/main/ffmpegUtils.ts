@@ -69,19 +69,11 @@ const convertAudio = async (inputPath: string, outputPath: string): Promise<void
 
   return new Promise((resolve, reject) => {
     ffmpeg(inputPath)
-      .audioCodec('libopus')
-      .audioBitrate('64k')
-      .audioChannels(1)
-      .outputOptions([
-        '-ar 24000',
-        '-vbr on',
-        '-compression_level 8',
-        '-frame_duration 60',
-        '-packet_loss 3',
-        '-mapping_family 1',
-        '-threads 2'
-      ])
-      .output(outputPath.replace(/\.[^/.]+$/, '.opus'))
+      .audioCodec('libmp3lame')
+      .audioBitrate('192k')
+      .audioFrequency(44100)
+      .outputOptions(['-threads 4', '-q:a 0'])
+      .output(outputPath.replace(/\.[^/.]+$/, '.mp3'))
       .on('start', () => {
         console.log(`[AUDIO] Starting: ${path.basename(inputPath)}`)
         logToRenderer(`[AUDIO] Starting: ${path.basename(inputPath)}`)
