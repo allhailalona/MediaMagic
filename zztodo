@@ -9,3 +9,22 @@ Oddities:
 a long run commit:
   - pacakge ffmpeg binaries in final build - I tried many things, check out hte README.md logs
 
+Important measurements:
+  a 15 seconds video:
+    preset 6 1 minute 182mb to 40.7mb
+    preset 4 2 minutes 182mb to 35.6mb
+    x2 more time and 1.15 less size
+
+  3 seconds video: 
+    preset 4 30 seconds 20.3mb to 646kb with lanczos
+    preset 4 1 minute 20.3mb to 1.76mb without lanczos
+    preset 6 15 seconds 20.3mb to 763kb
+    x2 more time and 1.2 less size
+
+  Note that these are relative not absolute values, I think 4 is a good fit for now. 
+  It's also recommended by several AI assistants. 
+
+  Note that without lanczos it takes about twice the time since there are more pixels to process. 
+  It makes sense since 1080p is about twice lower than 4k. The size difference is also twice...
+  Use lanczos!
+

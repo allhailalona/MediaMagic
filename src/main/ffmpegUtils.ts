@@ -2,9 +2,16 @@
 import path from 'path'
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs/promises'
+import os from 'os'
 import { DirItem } from '../types'
 import { sendToRenderer, logToRenderer } from './index'
 import { handleStopAllFFMPEGProcesses } from './ipc'
+
+const calculateThreads = (): number => {
+  const totalThreads = os.cpus().length
+  console.log('total threads are', Math.floor(totalThreads * 0.7))
+  return Math.floor(totalThreads * 0.7) // 70%
+}
 
 let totalToConvert: number = 0
 let alreadyConverted: number = 0
@@ -94,22 +101,18 @@ const convertAudio = async (inputPath: string, outputPath: string): Promise<void
 const convertVideo = async (inputPath: string, outputPath: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       const commonOptions = [
-        '-c:v', 'libaom-av1',        // Video codec: AV1
-        '-c:a', 'libmp3lame',        // Audio codec: MP3  
-        '-b:a', '128k',              // Audio bitrate
-        '-ar', '44100',              // Audio sample rate
-        '-q:a', '0',                 // Audio quality (highest)
-        '-crf', '22',                // Video quality (22 = high quality, lower = better)
-        '-b:v', '0',                 // Variable bitrate
-        '-cpu-used', '4',            // Encoding speed (0=slowest/best, 8=fastest/worst)
-        '-row-mt', '1',              // Row-based multithreading (boolean)
-        '-tile-columns', '2',        // Split into 4 columns (was 16) - better compression, similar speed
-        '-tile-rows', '2',           // Split into 4 rows (was 16) - better compression, similar speed
-        '-threads', '4',             // Number of CPU threads
-        '-movflags', '+faststart',   // Moves metadata to start of file - no impact on compression
-        '-vf', 'scale=\'min(1920,iw):-2:flags=lanczos\''  // Scale video, maintain ratio, max 1920px wide
+        '-c:v', 'libsvtav1',
+        '-c:a', 'libmp3lame',
+        '-b:a', '128k',
+        '-ar', '44100',
+        '-q:a', '0',
+        '-crf', '22',
+        '-b:v', '0',
+        '-preset', '4',
+        '-threads', calculateThreads().toString(),
+        '-movflags', '+faststart',
+        '-vf', 'scale=\'min(1920,iw):-2:flags=lanczos\''
       ];
-      
       ffmpeg(inputPath)
         .outputOptions([...commonOptions, '-pass', '1', '-f', 'null'])
         .output('/dev/null')
@@ -157,16 +160,13 @@ const convertVideo = async (inputPath: string, outputPath: string): Promise<void
     
     return new Promise((resolve, reject) => {
       const commonOptions = [
-        '-c:v', 'libaom-av1',        // Video codec: AV1 for AVIF
-        '-crf', '22',                // Quality level (22 = high quality)
-        '-cpu-used', '4',            // Encoding speed (2 = good balance)
-        '-row-mt', '1',              // Row-based multithreading (boolean)
-        '-tile-columns', '2',        // Split into 4 columns (was 16) - better compression
-        '-tile-rows', '2',           // Split into 4 rows (was 16) - better compression
-        '-threads', '4',             // CPU thread count
-        '-vf', 'scale=\'min(1920,iw):-2:flags=lanczos\'',  // Scale image, maintain ratio
-        '-f', 'avif'                 // Output format
-       ];
+        '-c:v', 'libsvtav1',
+        '-crf', '22',
+        '-preset', '4',
+        '-threads', calculateThreads().toString(),
+        '-vf', 'scale=\'min(1920,iw):-2:flags=lanczos\'', 
+        '-f', 'avif'
+      ];
           
       ffmpeg(inputPath)
         .outputOptions(commonOptions)
